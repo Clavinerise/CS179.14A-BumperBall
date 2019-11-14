@@ -14,20 +14,22 @@ int main() {
 
 	while( window.isOpen() ) {
 		sf::Event event;
-		switch( event.type )
-		{
-			case sf::Event::Closed:
-				window.close();
-				break;
-			case sf::Event::KeyPressed:
-				if( event.key.code == sf::Keyboard::Escape ) {
+		while (window.pollEvent(event))
+        {
+			switch( event.type )
+			{
+				case sf::Event::Closed:
 					window.close();
-				}
-				break;
+					break;
+				case sf::Event::KeyPressed:
+					if( event.key.code == sf::Keyboard::Escape ) {
+						window.close();
+					}
+					break;
+			}
 		}
 
 		window.clear();
-
 		window.display();
 	}
 
