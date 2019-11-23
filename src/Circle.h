@@ -10,7 +10,7 @@ private:
 
 public:
 	sf::CircleShape c;
-	float m_velocity = 0;
+	sf::Vector2f m_velocity;
 
 	Circle(float rad, float posx, float posy, float mass, sf::Color color);
 
@@ -23,9 +23,10 @@ public:
 	void setPosition(float xval, float yval);
 	void setMass(float mass);
 	void setColor(sf::Color value);
-	void setVelocity(float value);
+	void setVelocity(sf::Vector2f value);
 	
 	void drawCircle(sf::RenderWindow &rw);
+	void move();
 };
 
 #endif

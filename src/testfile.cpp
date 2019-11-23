@@ -1,11 +1,20 @@
 #include <SFML/Graphics.hpp>
 #include "Circle.h"
 
+#define FPS 60
+#define WINDOW_H 900
+#define WINDOW_W 900
+#define TIMESTEP 1.0f / FPS
+#define FORCE 500.0f * TIMESTEP
+
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(800, 800), "SFML works!");
-	Circle c(20.f, 100.f, 100.f, 5.f, sf::Color::White);
-	c.setVelocity(5.f);
+	Circle c(20.f, 100.f, 100.f, 100.f, sf::Color::White);
+
+	sf::Vector2f acceleration = sf::Vector2f(0, 0);
+
+	bool move = false;
 
 	while (window.isOpen())
 	{
@@ -14,10 +23,35 @@ int main()
 		{
 			if (event.type == sf::Event::Closed)
 				window.close();
-			if (event.type == sf::Event::KeyPressed)
-				if (event.key.code == sf::Keyboard::S)
-					c.c.move(0.f, c.m_velocity);
+			if (event.type == sf::Event::KeyPressed) {
+				if (event.key.code == sf::Keyboard::D) {
+					move = true;
+					acceleration.x += FORCE / c.getMass();
+				}
+				if (event.key.code == sf::Keyboard::A) {
+					move = true;
+					acceleration.x -= FORCE / c.getMass();
+				}
+				if (event.key.code == sf::Keyboard::S) {
+					move = true;
+					acceleration.y += FORCE / c.getMass();
+				}
+				if (event.key.code == sf::Keyboard::W) {
+					move = true;
+					acceleration.y -= FORCE / c.getMass();
+				}
+			}
+			if (event.type == sf::Event::KeyReleased)
+				break;
 		}
+
+		if (move) {
+			c.setVelocity(c.m_velocity + acceleration);
+			acceleration = sf::Vector2f(0, 0);
+			move = false;
+		}
+
+		c.move();
 
 		window.clear();
 		c.drawCircle(window);
