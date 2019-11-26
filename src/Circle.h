@@ -26,7 +26,8 @@ public:
 	void setVelocity(sf::Vector2f value);
 	
 	void drawCircle(sf::RenderWindow &rw);
-	void move();
+	void moveCircle();
+	bool isCollidingWithCircle(Circle c);
 };
 
 #endif

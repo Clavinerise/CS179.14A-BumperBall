@@ -1,6 +1,10 @@
 #include "Circle.h"
 #include <SFML/Graphics.hpp>
 
+float mag(sf::Vector2f v) {
+	return sqrt(v.x * v.x + v.y * v.y);
+}
+
 Circle::Circle(float rad, float posx, float posy, float mass, sf::Color color) {
 	m_radius = rad;
 	m_mass = mass;
@@ -9,11 +13,13 @@ Circle::Circle(float rad, float posx, float posy, float mass, sf::Color color) {
 
 	c.setRadius(m_radius);
 	c.setPosition(sf::Vector2f(posx, posy));
+	c.setOrigin(0, 0);
 	c.setFillColor(color);
 }
 
 void Circle::setRadius(float value) {
 	m_radius = value;
+	c.setRadius(m_radius);
 }
 
 void Circle::setPosition(sf::Vector2f value) {
@@ -40,6 +46,10 @@ void Circle::drawCircle(sf::RenderWindow &rw) {
 	rw.draw(c);
 }
 
-void Circle::move() {
+void Circle::moveCircle() {
 	c.move(m_velocity);
+}
+
+bool Circle::isCollidingWithCircle(Circle c) {
+	return mag(getPosition() - c.getPosition()) < (m_radius + c.getRadius());
 }

@@ -7,10 +7,15 @@
 #define TIMESTEP 1.0f / FPS
 #define FORCE 500.0f * TIMESTEP
 
+float static const elasticity = 0.75f;
+
+
+
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(800, 800), "SFML works!");
 	Circle c(20.f, 100.f, 100.f, 100.f, sf::Color::White);
+	Circle a(10.f, 100.f, 200.f, 250.f, sf::Color::Red);
 
 	sf::Vector2f acceleration = sf::Vector2f(0, 0);
 
@@ -51,10 +56,18 @@ int main()
 			move = false;
 		}
 
-		c.move();
+		c.moveCircle();
+
+		if (c.isCollidingWithCircle(a)) {
+			c.setColor(sf::Color::Blue);
+		}
+		else {
+			c.setColor(sf::Color::White);
+		}
 
 		window.clear();
 		c.drawCircle(window);
+		a.drawCircle(window);
 		window.display();
 	}
 
