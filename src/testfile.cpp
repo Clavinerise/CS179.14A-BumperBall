@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
 #include "Circle.h"
 
 #define FPS 60
@@ -7,15 +8,38 @@
 #define TIMESTEP 1.0f / FPS
 #define FORCE 500.0f * TIMESTEP
 
-float static const elasticity = 0.75f;
+using namespace std;
 
+float static const elasticity = 1.f;
 
+float dot(sf::Vector2f a, sf::Vector2f b) {
+	return a.x * b.x + a.y * b.y;
+}
+
+struct TwoVelocities {
+	sf::Vector2f v1, v2;
+};
+
+TwoVelocities setCircleCollisionVelocities(Circle b, Circle a) {
+	
+	TwoVelocities tv;
+	sf::Vector2f collision_normal, relative_velocity;
+
+	collision_normal = b.getPosition() - a.getPosition();
+	relative_velocity = a.m_velocity - b.m_velocity;
+
+	float impulse = -((1 + elasticity) * dot(relative_velocity, collision_normal)) / (dot(collision_normal, collision_normal) * (1 / a.getMass() + 1 / b.getMass()));
+	tv.v1 = a.m_velocity + (impulse / a.getMass() * collision_normal);
+	tv.v2 = b.m_velocity - (impulse / b.getMass() * collision_normal);
+
+	return tv;
+}
 
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(800, 800), "SFML works!");
-	Circle c(20.f, 100.f, 100.f, 100.f, sf::Color::White);
-	Circle a(10.f, 100.f, 200.f, 250.f, sf::Color::Red);
+	Circle c(40.f, 100.f, 100.f, 100.f, sf::Color::White);
+	Circle a(40.f, 100.f, 200.f, 250.f, sf::Color::Red);
 
 	sf::Vector2f acceleration = sf::Vector2f(0, 0);
 
@@ -55,15 +79,21 @@ int main()
 			acceleration = sf::Vector2f(0, 0);
 			move = false;
 		}
-
 		c.moveCircle();
 
 		if (c.isCollidingWithCircle(a)) {
-			c.setColor(sf::Color::Blue);
+			TwoVelocities tv = setCircleCollisionVelocities(a, c);
+
+			c.setVelocity(tv.v1);
+			a.setVelocity(tv.v2);
 		}
 		else {
 			c.setColor(sf::Color::White);
 		}
+
+		cout << a.m_velocity.x << "," << a.m_velocity.y << endl;
+		c.moveCircle();
+		a.moveCircle();
 
 		window.clear();
 		c.drawCircle(window);

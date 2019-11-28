@@ -17,6 +17,7 @@ public:
 	float getRadius() { return m_radius; }
 	sf::Vector2f getPosition() { return c.getPosition(); }
 	float getMass() { return m_mass; }
+	float getDistancewithCircle(Circle c);
 
 	void setRadius(float value);
 	void setPosition(sf::Vector2f value);

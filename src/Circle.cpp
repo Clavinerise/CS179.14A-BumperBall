@@ -51,5 +51,9 @@ void Circle::moveCircle() {
 }
 
 bool Circle::isCollidingWithCircle(Circle c) {
-	return mag(getPosition() - c.getPosition()) < (m_radius + c.getRadius());
+	return mag(getPosition() - c.getPosition()) <= (m_radius + c.getRadius());
+}
+
+float Circle::getDistancewithCircle(Circle c) {
+	return mag(c.getPosition() - getPosition());
 }
