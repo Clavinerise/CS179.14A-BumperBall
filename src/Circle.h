@@ -9,7 +9,7 @@ private:
 	sf::Color m_color;
 
 public:
-	sf::CircleShape c;
+	sf::CircleShape c, pm;
 	sf::Vector2f m_velocity;
 
 	Circle(float rad, float posx, float posy, float mass, sf::Color color);
@@ -27,8 +27,11 @@ public:
 	void setVelocity(sf::Vector2f value);
 	
 	void drawCircle(sf::RenderWindow &rw);
+	void drawCPosMarker(sf::RenderWindow& rw);
 	void moveCircle();
 	bool isCollidingWithCircle(Circle c);
+
+
 };
 
 #endif

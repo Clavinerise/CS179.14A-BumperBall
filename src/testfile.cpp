@@ -6,7 +6,7 @@
 #define WINDOW_H 900
 #define WINDOW_W 900
 #define TIMESTEP 1.0f / FPS
-#define FORCE 500.0f * TIMESTEP
+#define FORCE 1000.0f * TIMESTEP
 
 using namespace std;
 
@@ -39,11 +39,11 @@ int main()
 {
 	sf::RenderWindow window(sf::VideoMode(800, 800), "SFML works!");
 	Circle c(40.f, 100.f, 100.f, 100.f, sf::Color::White);
-	Circle a(40.f, 100.f, 200.f, 250.f, sf::Color::Red);
+	Circle a(20.f, 100.f, 200.f, 250.f, sf::Color::Red);
 
 	sf::Vector2f acceleration = sf::Vector2f(0, 0);
 
-	bool move = false;
+	bool move = false, collide = false;
 
 	while (window.isOpen())
 	{
@@ -79,25 +79,31 @@ int main()
 			acceleration = sf::Vector2f(0, 0);
 			move = false;
 		}
-		c.moveCircle();
 
+		
 		if (c.isCollidingWithCircle(a)) {
-			TwoVelocities tv = setCircleCollisionVelocities(a, c);
+			collide = true;
+		}
+		else {
+			collide = false;
+		}
 
+		if (collide) {
+			TwoVelocities tv = setCircleCollisionVelocities(a, c);
 			c.setVelocity(tv.v1);
 			a.setVelocity(tv.v2);
 		}
-		else {
-			c.setColor(sf::Color::White);
-		}
 
-		cout << a.m_velocity.x << "," << a.m_velocity.y << endl;
+		cout << c.isCollidingWithCircle(a) << endl;
 		c.moveCircle();
 		a.moveCircle();
 
 		window.clear();
 		c.drawCircle(window);
 		a.drawCircle(window);
+
+		c.drawCPosMarker(window);
+		a.drawCPosMarker(window);
 		window.display();
 	}
 
