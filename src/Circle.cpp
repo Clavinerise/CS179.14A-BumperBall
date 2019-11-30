@@ -1,15 +1,16 @@
 #include "Circle.h"
 #include <SFML/Graphics.hpp>
+using namespace std;
 
 float mag(sf::Vector2f v) {
 	return sqrt(v.x * v.x + v.y * v.y);
 }
 
-Circle::Circle(float rad, float posx, float posy, float mass, sf::Color color) {
+Circle::Circle(float rad, float posx, float posy, float mass, float elasticity, sf::Color color, string type) {
 	m_radius = rad;
 	m_mass = mass;
-
 	m_velocity = sf::Vector2f(0, 0);
+	m_elasticity = elasticity;
 
 	c.setRadius(m_radius);
 	c.setPosition(sf::Vector2f(posx, posy));
@@ -44,10 +45,22 @@ void Circle::setColor(sf::Color value) {
 }
 
 void Circle::setVelocity(sf::Vector2f value) {
+	if (value.x > 1.f) {
+		value.x = 1.f;
+	}
+	if (value.y > 1.f) {
+		value.y = 1.f;
+	}
+	if (value.x < -1.f) {
+		value.x = -1.f;
+	}
+	if (value.y < -1.f) {
+		value.y = -1.f;
+	}
 	m_velocity = value;
 }
 
-void Circle::drawCircle(sf::RenderWindow &rw) {
+void Circle::drawCircle(sf::RenderWindow& rw) {
 	rw.draw(c);
 }
 
@@ -74,4 +87,8 @@ bool Circle::isCollidingWithCircle(Circle c) {
 
 void Circle::drawCPosMarker(sf::RenderWindow& rw) {
 	rw.draw(pm);
+}
+
+void Circle::setElasticity(float set) {
+	m_elasticity = set;
 }

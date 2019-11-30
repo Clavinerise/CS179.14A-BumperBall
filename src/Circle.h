@@ -2,6 +2,7 @@
 #ifndef CIRCLE_H
 #define CIRCLE_H
 #include <SFML/Graphics.hpp>
+using namespace std;
 class Circle
 {
 private:
@@ -11,8 +12,10 @@ private:
 public:
 	sf::CircleShape c, pm;
 	sf::Vector2f m_velocity;
+	float m_elasticity;
+	string type;
 
-	Circle(float rad, float posx, float posy, float mass, sf::Color color);
+	Circle(float rad, float posx, float posy, float mass, float elasticity, sf::Color color, string type);
 
 	float getRadius() { return m_radius; }
 	sf::Vector2f getPosition() { return c.getPosition(); }
@@ -25,13 +28,13 @@ public:
 	void setMass(float mass);
 	void setColor(sf::Color value);
 	void setVelocity(sf::Vector2f value);
-	
-	void drawCircle(sf::RenderWindow &rw);
+
+	void drawCircle(sf::RenderWindow& rw);
 	void drawCPosMarker(sf::RenderWindow& rw);
 	void moveCircle();
 	bool isCollidingWithCircle(Circle c);
-
-
+	void setElasticity(float set);
+	float getElasticty();
 };
 
 #endif

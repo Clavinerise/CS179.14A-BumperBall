@@ -61,19 +61,31 @@ public:
 		}
 		return false;
 	}
-
+	string wallDirection(sf::CircleShape c) {
+		for (int x = 0; x < tiles.size(); x++) {
+			for (int y = 0; y < tiles[x].size(); y++) {
+				if (tiles[x][y].getFillColor() == sf::Color::Blue)
+				{
+					if (intersects(c, tiles[x][y]))
+					{
+						return wall(c, tiles[x][y]);
+					}
+				}
+			}
+		}
+		return "none";
+	}
 	bool intersects(sf::CircleShape c, sf::RectangleShape r) {
 		float cx, cy, radius, rx, ry, rw, rh;
 		cx = c.getPosition().x;
 		cy = c.getPosition().y;
 		radius = c.getRadius();
-		rx = r.getPosition().x - 50;
-		ry = r.getPosition().y - 50;
+		rx = r.getPosition().x;
+		ry = r.getPosition().y;
 		rw = r.getSize().x;
 		rh = r.getSize().y;
 		return circleRect(cx, cy, radius, rx, ry, rw, rh);
 	}
-
 	bool circleRect(float cx, float cy, float radius, float rx, float ry, float rw, float rh) {
 
 		// temporary variables to set edges for testing
@@ -96,5 +108,29 @@ public:
 			return true;
 		}
 		return false;
+	}
+	string wall(sf::CircleShape c, sf::RectangleShape r) {
+		float cx = c.getPosition().x;
+		float cy = c.getPosition().y;
+		float radius = c.getRadius();
+		float rx = r.getPosition().x;
+		float ry = r.getPosition().y;
+		float rw = r.getSize().x;
+		float rh = r.getSize().y;
+		string check = "";
+		if (cx < rx) {
+			check = "left";
+		}
+		else if (cx > rx + rw)
+		{
+			check = "right";
+		}
+		if (cy < ry) {
+			check = "top";
+		}
+		else if (cy > ry + rh) {
+			check = "bottom";
+		}
+		return check;
 	}
 };
