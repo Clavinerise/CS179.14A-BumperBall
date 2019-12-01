@@ -115,6 +115,7 @@ void Circle::addDuration(float toAdd) {
 }
 
 void Circle::setTexture() {
+	/*
 	sf::Texture texture;
 	sf::Texture textureBall;
 	textureBall.loadFromFile("ball.png");
@@ -139,6 +140,7 @@ void Circle::setTexture() {
 	else if (m_type == "ball") {
 		c.setTexture(&textureBall);
 	}
+	*/
 }
 
 float Circle::getElasticity() {
