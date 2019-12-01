@@ -1,9 +1,14 @@
 #include "Circle.h"
 #include <SFML/Graphics.hpp>
+#include <iostream>
 using namespace std;
 
 float mag(sf::Vector2f v) {
 	return sqrt(v.x * v.x + v.y * v.y);
+}
+
+Circle::Circle() {
+
 }
 
 Circle::Circle(float rad, float posx, float posy, float mass, float elasticity, sf::Color color, string type) {
@@ -11,6 +16,10 @@ Circle::Circle(float rad, float posx, float posy, float mass, float elasticity, 
 	m_mass = mass;
 	m_velocity = sf::Vector2f(0, 0);
 	m_elasticity = elasticity;
+	m_type = type;
+
+	if (type == "player1" || type == "player2" || type == "ball") duration = 0;
+	else duration = 15;
 
 	c.setRadius(m_radius);
 	c.setPosition(sf::Vector2f(posx, posy));
@@ -21,6 +30,8 @@ Circle::Circle(float rad, float posx, float posy, float mass, float elasticity, 
 	pm.setPosition(sf::Vector2f(posx, posy));
 	pm.setOrigin(sf::Vector2f(2.5, 2.5));
 	pm.setFillColor(sf::Color::Blue);
+
+	setTexture();
 }
 
 void Circle::setRadius(float value) {
@@ -57,6 +68,10 @@ void Circle::setVelocity(sf::Vector2f value) {
 	if (value.y < -1.f) {
 		value.y = -1.f;
 	}
+	if (buff == "speedBoost" && duration > 0) {
+		value.x *= 1.2;
+		value.y *= 1.2;
+	}
 	m_velocity = value;
 }
 
@@ -91,4 +106,42 @@ void Circle::drawCPosMarker(sf::RenderWindow& rw) {
 
 void Circle::setElasticity(float set) {
 	m_elasticity = set;
+}
+
+void Circle::addDuration(float toAdd) {
+	duration += toAdd;
+	if (duration > 15) duration = 15;
+	if (duration < 0) duration = 0;
+}
+
+void Circle::setTexture() {
+	sf::Texture texture;
+	sf::Texture textureBall;
+	textureBall.loadFromFile("ball.png");
+	if (m_type == "player1" || m_type == "player2") {
+
+	}
+	else if (m_type == "speedBoost") {
+		texture.loadFromFile("speedboost.png");
+		if (duration == 15) c.setTexture(&texture);
+		else c.setTexture(&textureBall);
+	}
+	else if (m_type == "shootBall") {
+		texture.loadFromFile("shootBall.png");
+		if (duration == 15) c.setTexture(&texture);
+		else c.setTexture(&textureBall);
+	}
+	else if (m_type == "reducedElasticity") {
+		texture.loadFromFile("reducedElasticity.png");
+		if (duration == 15) c.setTexture(&texture);
+		else c.setTexture(&textureBall);
+	}
+	else if (m_type == "ball") {
+		c.setTexture(&textureBall);
+	}
+}
+
+float Circle::getElasticity() {
+	if (buff == "reducedElasticity" && duration > 0) return 0;
+	return m_elasticity;
 }

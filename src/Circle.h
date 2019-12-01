@@ -13,8 +13,11 @@ public:
 	sf::CircleShape c, pm;
 	sf::Vector2f m_velocity;
 	float m_elasticity;
-	string type;
+	string m_type;
+	float duration;
+	string buff;
 
+	Circle();
 	Circle(float rad, float posx, float posy, float mass, float elasticity, sf::Color color, string type);
 
 	float getRadius() { return m_radius; }
@@ -34,7 +37,9 @@ public:
 	void moveCircle();
 	bool isCollidingWithCircle(Circle c);
 	void setElasticity(float set);
-	float getElasticty();
+	void addDuration(float toAdd);
+	void setTexture();
+	float getElasticity();
 };
 
 #endif

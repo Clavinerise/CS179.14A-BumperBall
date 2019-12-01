@@ -31,8 +31,8 @@ TwoVelocities setCircleCollisionVelocities(Circle b, Circle a) {
 	collision_normal = b.getPosition() - a.getPosition();
 	relative_velocity = a.m_velocity - b.m_velocity;
 
-	float impulse1 = -((1 + a.m_elasticity) * dot(relative_velocity, collision_normal)) / (dot(collision_normal, collision_normal) * (1 / a.getMass() + 1 / b.getMass()));
-	float impulse2 = -((1 + b.m_elasticity) * dot(relative_velocity, collision_normal)) / (dot(collision_normal, collision_normal) * (1 / a.getMass() + 1 / b.getMass()));
+	float impulse1 = -((1 + a.getElasticity()) * dot(relative_velocity, collision_normal)) / (dot(collision_normal, collision_normal) * (1 / a.getMass() + 1 / b.getMass()));
+	float impulse2 = -((1 + b.getElasticity()) * dot(relative_velocity, collision_normal)) / (dot(collision_normal, collision_normal) * (1 / a.getMass() + 1 / b.getMass()));
 	tv.v1 = a.m_velocity + (impulse1 / a.getMass() * collision_normal);
 	tv.v2 = b.m_velocity - (impulse2 / b.getMass() * collision_normal);
 
@@ -41,6 +41,8 @@ TwoVelocities setCircleCollisionVelocities(Circle b, Circle a) {
 
 int main()
 {
+	sf::Clock clock;
+
 	sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML works!");
 
 	fstream file;
@@ -50,8 +52,8 @@ int main()
 	float size1, posX1, posY1;
 	float size2, posX2, posY2;
 	file >> size1 >> posX1 >> posY1 >> size2 >> posX2 >> posY2;;
-	Circle c(size1, posX1, posY1, 100.f, 1.f, sf::Color::White, "player");
-	Circle d(size2, posX2, posY2, 100.f, 1.f, sf::Color::White, "player");
+	Circle c(size1, posX1, posY1, 100.f, 0.5f, sf::Color::White, "player1");
+	Circle d(size2, posX2, posY2, 100.f, 0.5f, sf::Color::Yellow, "player2");
 
 	std::vector<Circle*> balls;
 	balls.push_back(&c);
@@ -62,8 +64,9 @@ int main()
 	std::vector<Circle> evBalls;
 	for (int x = 0; x < nBalls; x++) {
 		float rad, posx, posy, mass, elasticity;
-		file >> rad >> posx >> posy >> mass >> elasticity;
-		evBalls.push_back(Circle(rad, posx, posy, mass, elasticity, sf::Color::Red, "ball"));
+		string type;
+		file >> rad >> posx >> posy >> mass >> elasticity >> type;
+		evBalls.push_back(Circle(rad, posx, posy, mass, elasticity, sf::Color::Red, type));
 	}
 
 	for (int x = 0; x < nBalls; x++) {
@@ -73,10 +76,14 @@ int main()
 	sf::Vector2f acceleration1 = sf::Vector2f(0, 0);
 	sf::Vector2f acceleration2 = sf::Vector2f(0, 0);
 
-	bool move1 = false, move2 = false;
+	bool move1 = false, move2 = false, shoot1 = false, shoot2 = false, firstShot1 = false, firstShot2 = false;
+	float direction1X = 0, direction1Y = 0, direction2X = 0, direction2Y = 0;
+	float cooldown1 = 5, cooldown2 = 5;
 	
 	Grid grid;
 	grid.createGrid("Test.txt", 1000, 1000);
+
+	Circle tp1, tp2;
 
 	while (window.isOpen())
 	{
@@ -89,34 +96,56 @@ int main()
 				if (event.key.code == sf::Keyboard::D) {
 					move1 = true;
 					acceleration1.x += FORCE / c.getMass();
+					direction1X = 1;
+					direction1Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::A) {
 					move1 = true;
 					acceleration1.x -= FORCE / c.getMass();
+					direction1X = -1;
+					direction1Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::S) {
 					move1 = true;
 					acceleration1.y += FORCE / c.getMass();
+					direction1Y = 1;
+					direction1X = 0;
 				}
 				if (event.key.code == sf::Keyboard::W) {
 					move1 = true;
 					acceleration1.y -= FORCE / c.getMass();
+					direction1Y = -1;
+					direction1X = 0;
 				}
 				if (event.key.code == sf::Keyboard::Right) {
 					move2 = true;
 					acceleration2.x += FORCE / d.getMass();
+					direction2X = 1;
+					direction2Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::Left) {
 					move2 = true;
 					acceleration2.x -= FORCE / d.getMass();
+					direction2X = -1;
+					direction2Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::Down) {
 					move2 = true;
 					acceleration2.y += FORCE / d.getMass();
+					direction2Y = 1;
+					direction2X = 0;
 				}
 				if (event.key.code == sf::Keyboard::Up) {
 					move2 = true;
 					acceleration2.y -= FORCE / d.getMass();
+					direction2Y = -1;
+					direction2X = 0;
+				}
+				if (event.key.code == sf::Keyboard::Space && cooldown1 == 5) {
+					shoot1 = true;
+				}
+				if (event.key.code == sf::Keyboard::Enter && cooldown2 == 5) {
+					shoot2 = true;
 				}
 			}
 			if (event.type == sf::Event::KeyReleased)
@@ -133,16 +162,65 @@ int main()
 			acceleration2 = sf::Vector2f(0, 0);
 			move1 = false;
 		}
+		if (shoot1) {
+			float strength = sqrt((c.m_velocity.x * c.m_velocity.x) + (c.m_velocity.y * c.m_velocity.y)) * 5;
 
+			tp1 = Circle(25.f, c.getPosition().x + (c.getRadius() + 25) * direction1X, c.getPosition().y + (c.getRadius() + 25) * direction1Y, 50.f, 1.f, sf::Color::White, "ball");
+			if (!firstShot1) {
+				balls.push_back(&tp1);
+				firstShot1 = true;
+			}
+
+			tp1.m_velocity = sf::Vector2f(strength * direction1X, strength * direction1Y);
+			tp1.moveCircle();
+			shoot1 = false;
+			direction1X = 0;
+			direction1Y = 0;
+			cooldown1 = 0;
+		}
+		if (shoot2) {
+			float strength = sqrt((d.m_velocity.x * d.m_velocity.x) + (d.m_velocity.y * d.m_velocity.y)) * 5;
+
+			tp2 = Circle(25.f, d.getPosition().x + (d.getRadius() + 25) * direction2X, d.getPosition().y + (d.getRadius() + 25) * direction2Y, 50.f, 1.f, sf::Color::Yellow, "ball");
+			if (!firstShot2) {
+				balls.push_back(&tp2);
+				firstShot2 = true;
+			}
+
+			tp2.m_velocity = sf::Vector2f(strength * direction2X, strength * direction2Y);
+			tp2.moveCircle();
+			shoot2 = false;
+			direction2X = 0;
+			direction2Y = 0;
+			cooldown2 = 0;
+		}
+
+		float time = clock.restart().asSeconds();
+
+		if (c.buff == "shootBall" && c.duration > 0) cooldown1 += time * 2;
+		else cooldown1 += time;
+		if (d.buff == "shootBall" && d.duration > 0) cooldown2 += time * 2;
+		else cooldown2 += time;
+		if (cooldown1 > 5) cooldown1 = 5;
+		if (cooldown2 > 5) cooldown2 = 5;
+		
 		window.clear();
 		grid.drawGrid(window);
 
 		for (int x = 0; x < balls.size(); x++) {
 			Circle &temp = *balls[x];
+			
+			if (temp.m_type == "player1" || temp.m_type == "player2") temp.addDuration(-time);
+			else temp.addDuration(time);
 
 			for (int y = x + 1; y < balls.size(); y++) {
 				Circle &temp2 = *balls[y];
 				if (temp.isCollidingWithCircle(temp2)) {
+					if ((temp.m_type == "player1" || temp.m_type == "player2") && temp2.duration == 15) {
+						temp.buff = temp2.m_type;
+						temp.duration = temp2.duration;
+						temp2.duration = 0;
+					}
 					sf::Vector2f tmp = sf::Vector2f(
 						(pow(temp.getRadius() * 2, 0.5) / 2 + pow(temp2.getRadius() * 2, 0.5) / 2),
 						(pow(temp.getRadius() * 2, 0.5) / 2 + pow(temp2.getRadius() * 2, 0.5) / 2)
@@ -160,29 +238,33 @@ int main()
 				}
 			}
 
-			if (grid.onPlatform(temp.c) && temp.type == "player") temp.setColor(sf::Color::White);
-			else if(temp.type == "player") temp.setColor(sf::Color::Yellow);
+			if (!grid.onPlatform(temp.c) && temp.m_type == "player1") {
+				cout << "Player 2 Wins" << endl;
+			}
+			else if (!grid.onPlatform(temp.c) && temp.m_type == "player2") {
+				cout << "Player 1 Wins" << endl;
+			}
 
 			string wd = grid.wallDirection(temp.c);
 			if (wd._Equal("top")) {
 				temp.c.move(sf::Vector2f(0, -5));
 				temp.pm.move(sf::Vector2f(0, -5));
-				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, -abs(temp.m_velocity.y) * temp.m_elasticity));
+				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, -abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
 			else if (wd._Equal("bottom")) {
 				temp.c.move(sf::Vector2f(0, 5));
 				temp.pm.move(sf::Vector2f(0, 5));
-				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, abs(temp.m_velocity.y) * temp.m_elasticity));
+				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
 			else if (wd._Equal("left")) {
 				temp.c.move(sf::Vector2f(-5, 0));
 				temp.pm.move(sf::Vector2f(-5, 0));
-				temp.setVelocity(sf::Vector2f(-abs(temp.m_velocity.x), temp.m_velocity.y) * temp.m_elasticity);
+				temp.setVelocity(sf::Vector2f(-abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());
 			}
 			else if (wd._Equal("right")) {
 				temp.c.move(sf::Vector2f(5, 0));
 				temp.pm.move(sf::Vector2f(5, 0));
-				temp.setVelocity(sf::Vector2f(abs(temp.m_velocity.x), temp.m_velocity.y) * temp.m_elasticity);
+				temp.setVelocity(sf::Vector2f(abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());
 			}
 
 			temp.moveCircle();
