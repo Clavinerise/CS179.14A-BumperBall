@@ -12,6 +12,8 @@ using namespace std;
 #define TIMESTEP 0.5f / FPS
 #define FORCE 500.0f * TIMESTEP
 
+float highSound = 45.f, lowSound = 15.f;
+
 float dot(sf::Vector2f a, sf::Vector2f b) {
 	return a.x * b.x + a.y * b.y;
 }
@@ -55,10 +57,12 @@ int main()
 	shoot.setBuffer(shootbuffer);
 
 	bump.setBuffer(bumpbuffer);
-	bump.setVolume(45.f);
+	bump.setVolume(highSound);
 	bump.setAttenuation(25.f);
 
 	wall.setBuffer(wallbuffer);
+	wall.setVolume(lowSound);
+	wall.setAttenuation(25.f);
 
 	fstream file;
 	string inputFile = "Balls.txt";
@@ -67,8 +71,8 @@ int main()
 	float size1, posX1, posY1;
 	float size2, posX2, posY2;
 	file >> size1 >> posX1 >> posY1 >> size2 >> posX2 >> posY2;;
-	Circle c(size1, posX1, posY1, 100.f, 0.5f, sf::Color::White, "player1");
-	Circle d(size2, posX2, posY2, 100.f, 0.5f, sf::Color::Yellow, "player2");
+	Circle c(size1, posX1, posY1, 50.f, 0.5f, sf::Color::White, "player1");
+	Circle d(size2, posX2, posY2, 50.f, 0.5f, sf::Color::Yellow, "player2");
 
 	std::vector<Circle*> balls;
 	balls.push_back(&c);
@@ -91,6 +95,9 @@ int main()
 		}
 		else if (type == "speedBoost") {
 			powerup = sf::Color::Cyan;
+		}
+		else {
+			powerup = sf::Color::Magenta;
 		}
 		
 		evBalls.push_back(Circle(rad, posx, posy, mass, elasticity, powerup, type));
@@ -123,50 +130,58 @@ int main()
 				//p1 movement
 				if (event.key.code == sf::Keyboard::D) {
 					move1 = true;
-					acceleration1.x += FORCE / c.getMass();
+					if (c.m_velocity.x < 0) acceleration1.x += 5 * FORCE / c.getMass();
+					else acceleration1.x += FORCE / c.getMass();
 					direction1X = 1;
 					direction1Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::A) {
 					move1 = true;
-					acceleration1.x -= FORCE / c.getMass();
+					if (c.m_velocity.x > 0) acceleration1.x -= 5 * FORCE / c.getMass();
+					else acceleration1.x -= FORCE / c.getMass();
 					direction1X = -1;
 					direction1Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::S) {
 					move1 = true;
-					acceleration1.y += FORCE / c.getMass();
+					if (c.m_velocity.y < 0) acceleration1.y += 5 * FORCE / c.getMass();
+					else acceleration1.y += FORCE / c.getMass();
 					direction1Y = 1;
 					direction1X = 0;
 				}
 				if (event.key.code == sf::Keyboard::W) {
 					move1 = true;
-					acceleration1.y -= FORCE / c.getMass();
+					if (c.m_velocity.y > 0) acceleration1.y -= 5 * FORCE / c.getMass();
+					else acceleration1.y -= FORCE / c.getMass();
 					direction1Y = -1;
 					direction1X = 0;
 				}
 				//p2 movement
 				if (event.key.code == sf::Keyboard::Right) {
 					move2 = true;
-					acceleration2.x += FORCE / d.getMass();
+					if (d.m_velocity.x < 0) acceleration2.x += 5 * FORCE / d.getMass();
+					else acceleration2.x += FORCE / d.getMass();
 					direction2X = 1;
 					direction2Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::Left) {
 					move2 = true;
-					acceleration2.x -= FORCE / d.getMass();
+					if (d.m_velocity.x > 0) acceleration2.x -= 5 * FORCE / d.getMass();
+					else acceleration2.x -= FORCE / d.getMass();
 					direction2X = -1;
 					direction2Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::Down) {
 					move2 = true;
-					acceleration2.y += FORCE / d.getMass();
+					if (d.m_velocity.y < 0) acceleration2.y += 5 * FORCE / d.getMass();
+					else acceleration2.y += FORCE / d.getMass();
 					direction2Y = 1;
 					direction2X = 0;
 				}
 				if (event.key.code == sf::Keyboard::Up) {
 					move2 = true;
-					acceleration2.y -= FORCE / d.getMass();
+					if (d.m_velocity.y > 0) acceleration2.y -= 5 * FORCE / d.getMass();
+					else acceleration2.y -= FORCE / d.getMass();
 					direction2Y = -1;
 					direction2X = 0;
 				}
@@ -183,12 +198,14 @@ int main()
 		}
 
 		if (move1) {
-			c.setVelocity(c.m_velocity + acceleration1);
+			if(c.buff == "speedBoost" && c.duration > 0) c.setVelocity(c.m_velocity + acceleration1 + acceleration1 + acceleration1);
+			else c.setVelocity(c.m_velocity + acceleration1);
 			acceleration1 = sf::Vector2f(0, 0);
 			move1 = false;
 		}
 		if (move2) {
-			d.setVelocity(d.m_velocity + acceleration2);
+			if (d.buff == "speedBoost" && d.duration > 0) d.setVelocity(d.m_velocity + acceleration2 + acceleration2 + acceleration2);
+			else d.setVelocity(d.m_velocity + acceleration2);
 			acceleration2 = sf::Vector2f(0, 0);
 			move1 = false;
 		}
@@ -248,7 +265,11 @@ int main()
 			for (int y = x + 1; y < balls.size(); y++) {
 				Circle &temp2 = *balls[y];
 				if (temp.isCollidingWithCircle(temp2)) {
-					bump.play();
+					if (temp.m_type == "player1" || temp.m_type == "player2") {
+						if (temp2.m_type == "player1" || temp2.m_type == "player2") bump.setVolume(highSound);
+						else bump.setVolume(lowSound);
+						bump.play();
+					}
 					if ((temp.m_type == "player1" || temp.m_type == "player2") && temp2.duration == 15) {
 						temp.buff = temp2.m_type;
 						temp.duration = temp2.duration;
@@ -279,31 +300,33 @@ int main()
 			}
 
 			string wd = grid.wallDirection(temp.c);
+
 			if (wd._Equal("top")) {
-				wall.play();
-				temp.c.move(sf::Vector2f(0, -5));
-				temp.pm.move(sf::Vector2f(0, -5));
+				if (temp.m_type == "player1" || temp.m_type == "player2") wall.play();
+				temp.c.move(sf::Vector2f(0, -10));
+				temp.pm.move(sf::Vector2f(0, -10));
 				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, -abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
 			else if (wd._Equal("bottom")) {
-				wall.play();
-				temp.c.move(sf::Vector2f(0, 5));
-				temp.pm.move(sf::Vector2f(0, 5));
+				if (temp.m_type == "player1" || temp.m_type == "player2") wall.play();
+				temp.c.move(sf::Vector2f(0, 10));
+				temp.pm.move(sf::Vector2f(0, 10));
 				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
 			else if (wd._Equal("left")) {
-				wall.play();
-				temp.c.move(sf::Vector2f(-5, 0));
-				temp.pm.move(sf::Vector2f(-5, 0));
+				if (temp.m_type == "player1" || temp.m_type == "player2") wall.play();
+				temp.c.move(sf::Vector2f(-10, 0));
+				temp.pm.move(sf::Vector2f(-10, 0));
 				temp.setVelocity(sf::Vector2f(-abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());
 			}
 			else if (wd._Equal("right")) {
-				wall.play();
-				temp.c.move(sf::Vector2f(5, 0));
-				temp.pm.move(sf::Vector2f(5, 0));
+				if (temp.m_type == "player1" || temp.m_type == "player2") wall.play();
+				temp.c.move(sf::Vector2f(10, 0));
+				temp.pm.move(sf::Vector2f(10, 0));
 				temp.setVelocity(sf::Vector2f(abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());
 			}
 
+			temp.setTexture();
 			temp.moveCircle();
 			temp.drawCircle(window);
 		}
