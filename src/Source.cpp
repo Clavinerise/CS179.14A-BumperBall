@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include "Circle.h"
 #include <fstream>
 #include <iostream>
@@ -45,6 +46,20 @@ int main()
 
 	sf::RenderWindow window(sf::VideoMode(1000, 1000), "SFML works!");
 
+	sf::SoundBuffer shootbuffer, bumpbuffer, wallbuffer;
+	shootbuffer.loadFromFile("sfx/shoot.flac");
+	bumpbuffer.loadFromFile("sfx/bump.wav");
+	wallbuffer.loadFromFile("sfx/wall.wav");
+
+	sf::Sound shoot, bump, wall;
+	shoot.setBuffer(shootbuffer);
+
+	bump.setBuffer(bumpbuffer);
+	bump.setVolume(45.f);
+	bump.setAttenuation(25.f);
+
+	wall.setBuffer(wallbuffer);
+
 	fstream file;
 	string inputFile = "Balls.txt";
 	file.open(inputFile.c_str());
@@ -66,7 +81,19 @@ int main()
 		float rad, posx, posy, mass, elasticity;
 		string type;
 		file >> rad >> posx >> posy >> mass >> elasticity >> type;
-		evBalls.push_back(Circle(rad, posx, posy, mass, elasticity, sf::Color::Red, type));
+		
+		sf::Color powerup;
+		if (type == "shootBall") {
+			powerup = sf::Color::Red;
+		}
+		else if (type == "reducedElasticity") {
+			powerup = sf::Color::Green;
+		}
+		else if (type == "speedBoost") {
+			powerup = sf::Color::Cyan;
+		}
+		
+		evBalls.push_back(Circle(rad, posx, posy, mass, elasticity, powerup, type));
 	}
 
 	for (int x = 0; x < nBalls; x++) {
@@ -81,7 +108,7 @@ int main()
 	float cooldown1 = 5, cooldown2 = 5;
 	
 	Grid grid;
-	grid.createGrid("Test.txt", 1000, 1000);
+	grid.createGrid("maps/hard.txt", 1000, 1000);
 
 	Circle tp1, tp2;
 
@@ -93,6 +120,7 @@ int main()
 			if (event.type == sf::Event::Closed)
 				window.close();
 			if (event.type == sf::Event::KeyPressed) {
+				//p1 movement
 				if (event.key.code == sf::Keyboard::D) {
 					move1 = true;
 					acceleration1.x += FORCE / c.getMass();
@@ -117,6 +145,7 @@ int main()
 					direction1Y = -1;
 					direction1X = 0;
 				}
+				//p2 movement
 				if (event.key.code == sf::Keyboard::Right) {
 					move2 = true;
 					acceleration2.x += FORCE / d.getMass();
@@ -141,6 +170,7 @@ int main()
 					direction2Y = -1;
 					direction2X = 0;
 				}
+				//shooting
 				if (event.key.code == sf::Keyboard::Space && cooldown1 == 5) {
 					shoot1 = true;
 				}
@@ -163,6 +193,7 @@ int main()
 			move1 = false;
 		}
 		if (shoot1) {
+			shoot.play();
 			float strength = sqrt((c.m_velocity.x * c.m_velocity.x) + (c.m_velocity.y * c.m_velocity.y)) * 5;
 
 			tp1 = Circle(25.f, c.getPosition().x + (c.getRadius() + 25) * direction1X, c.getPosition().y + (c.getRadius() + 25) * direction1Y, 50.f, 1.f, sf::Color::White, "ball");
@@ -179,6 +210,7 @@ int main()
 			cooldown1 = 0;
 		}
 		if (shoot2) {
+			shoot.play();
 			float strength = sqrt((d.m_velocity.x * d.m_velocity.x) + (d.m_velocity.y * d.m_velocity.y)) * 5;
 
 			tp2 = Circle(25.f, d.getPosition().x + (d.getRadius() + 25) * direction2X, d.getPosition().y + (d.getRadius() + 25) * direction2Y, 50.f, 1.f, sf::Color::Yellow, "ball");
@@ -216,6 +248,7 @@ int main()
 			for (int y = x + 1; y < balls.size(); y++) {
 				Circle &temp2 = *balls[y];
 				if (temp.isCollidingWithCircle(temp2)) {
+					bump.play();
 					if ((temp.m_type == "player1" || temp.m_type == "player2") && temp2.duration == 15) {
 						temp.buff = temp2.m_type;
 						temp.duration = temp2.duration;
@@ -247,21 +280,25 @@ int main()
 
 			string wd = grid.wallDirection(temp.c);
 			if (wd._Equal("top")) {
+				wall.play();
 				temp.c.move(sf::Vector2f(0, -5));
 				temp.pm.move(sf::Vector2f(0, -5));
 				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, -abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
 			else if (wd._Equal("bottom")) {
+				wall.play();
 				temp.c.move(sf::Vector2f(0, 5));
 				temp.pm.move(sf::Vector2f(0, 5));
 				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
 			else if (wd._Equal("left")) {
+				wall.play();
 				temp.c.move(sf::Vector2f(-5, 0));
 				temp.pm.move(sf::Vector2f(-5, 0));
 				temp.setVelocity(sf::Vector2f(-abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());
 			}
 			else if (wd._Equal("right")) {
+				wall.play();
 				temp.c.move(sf::Vector2f(5, 0));
 				temp.pm.move(sf::Vector2f(5, 0));
 				temp.setVelocity(sf::Vector2f(abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());

@@ -24,7 +24,7 @@ public:
 				file >> t;
 				sf::RectangleShape tmp;
 				if (t == 1) {
-					tmp.setFillColor(sf::Color::Green);
+					tmp.setFillColor(sf::Color(0, 128, 0));
 				}
 				else if (t == 2) {
 					tmp.setFillColor(sf::Color::Blue);
@@ -50,7 +50,7 @@ public:
 	bool onPlatform(sf::CircleShape c) {
 		for (int x = 0; x < tiles.size(); x++) {
 			for (int y = 0; y < tiles[x].size(); y++) {
-				if (tiles[x][y].getFillColor() == sf::Color::Green)
+				if (tiles[x][y].getFillColor() == sf::Color(0, 128, 0))
 				{
 					if (intersects(c, tiles[x][y]))
 					{
