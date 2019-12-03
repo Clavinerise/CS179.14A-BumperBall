@@ -1,6 +1,7 @@
 #pragma once
 #ifndef CIRCLE_H
 #define CIRCLE_H
+#include <cmath>
 #include <SFML/Graphics.hpp>
 using namespace std;
 class Circle
