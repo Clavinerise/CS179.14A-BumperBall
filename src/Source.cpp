@@ -261,12 +261,14 @@ int main()
 		}
 
 		if (move1) {
-			c.setVelocity(c.m_velocity + acceleration1);
+			if (c.buff == "speedBoost" && c.duration > 0) c.setVelocity(c.m_velocity + acceleration1 + acceleration1 + acceleration1);
+			else c.setVelocity(c.m_velocity + acceleration1);
 			acceleration1 = sf::Vector2f(0, 0);
 			move1 = false;
 		}
 		if (move2) {
-			d.setVelocity(d.m_velocity + acceleration2);
+			if (d.buff == "speedBoost" && d.duration > 0) d.setVelocity(d.m_velocity + acceleration2 + acceleration2 + acceleration2);
+			else d.setVelocity(d.m_velocity + acceleration2);
 			acceleration2 = sf::Vector2f(0, 0);
 			move1 = false;
 		}

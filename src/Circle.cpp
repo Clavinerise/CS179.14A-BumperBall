@@ -54,17 +54,17 @@ void Circle::setColor(sf::Color value) {
 }
 
 void Circle::setVelocity(sf::Vector2f value) {
-	if (value.x > 5.f) {
-		value.x = 5.f;
+	if (value.x > 10.f) {
+		value.x = 10.f;
 	}
-	if (value.y > 5.f) {
-		value.y = 5.f;
+	if (value.y > 10.f) {
+		value.y = 10.f;
 	}
-	if (value.x < -5.f) {
-		value.x = -5.f;
+	if (value.x < -10.f) {
+		value.x = -10.f;
 	}
-	if (value.y < -5.f) {
-		value.y = -5.f;
+	if (value.y < -10.f) {
+		value.y = -10.f;
 	}
 	m_velocity = value;
 }
