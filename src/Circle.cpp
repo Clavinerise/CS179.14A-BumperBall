@@ -1,7 +1,6 @@
 #include "Circle.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
-#include <cmath>
 using namespace std;
 
 float mag(sf::Vector2f v) {
@@ -31,8 +30,6 @@ Circle::Circle(float rad, float posx, float posy, float mass, float elasticity, 
 	pm.setPosition(sf::Vector2f(posx, posy));
 	pm.setOrigin(sf::Vector2f(2.5, 2.5));
 	pm.setFillColor(sf::Color::Blue);
-
-	setTexture();
 }
 
 void Circle::setRadius(float value) {
@@ -57,21 +54,17 @@ void Circle::setColor(sf::Color value) {
 }
 
 void Circle::setVelocity(sf::Vector2f value) {
-	if (value.x > 1.f) {
-		value.x = 1.f;
+	if (value.x > 5.f) {
+		value.x = 5.f;
 	}
-	if (value.y > 1.f) {
-		value.y = 1.f;
+	if (value.y > 5.f) {
+		value.y = 5.f;
 	}
-	if (value.x < -1.f) {
-		value.x = -1.f;
+	if (value.x < -5.f) {
+		value.x = -5.f;
 	}
-	if (value.y < -1.f) {
-		value.y = -1.f;
-	}
-	if (buff == "speedBoost" && duration > 0) {
-		value.x *= 1.2;
-		value.y *= 1.2;
+	if (value.y < -5.f) {
+		value.y = -5.f;
 	}
 	m_velocity = value;
 }
@@ -116,32 +109,18 @@ void Circle::addDuration(float toAdd) {
 }
 
 void Circle::setTexture() {
-	/*
-	sf::Texture texture;
-	sf::Texture textureBall;
-	textureBall.loadFromFile("ball.png");
-	if (m_type == "player1" || m_type == "player2") {
-
-	}
-	else if (m_type == "speedBoost") {
-		texture.loadFromFile("speedboost.png");
-		if (duration == 15) c.setTexture(&texture);
-		else c.setTexture(&textureBall);
+	if (m_type == "speedBoost") {
+		if (duration == 15) c.setFillColor(sf::Color::Cyan);
+		else c.setFillColor(sf::Color::Magenta);
 	}
 	else if (m_type == "shootBall") {
-		texture.loadFromFile("shootBall.png");
-		if (duration == 15) c.setTexture(&texture);
-		else c.setTexture(&textureBall);
+		if (duration == 15) c.setFillColor(sf::Color::Red);
+		else c.setFillColor(sf::Color::Magenta);
 	}
 	else if (m_type == "reducedElasticity") {
-		texture.loadFromFile("reducedElasticity.png");
-		if (duration == 15) c.setTexture(&texture);
-		else c.setTexture(&textureBall);
+		if (duration == 15) c.setFillColor(sf::Color::Green);
+		else c.setFillColor(sf::Color::Magenta);
 	}
-	else if (m_type == "ball") {
-		c.setTexture(&textureBall);
-	}
-	*/
 }
 
 float Circle::getElasticity() {

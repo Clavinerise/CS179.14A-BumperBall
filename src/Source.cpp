@@ -13,6 +13,8 @@ using namespace std;
 #define TIMESTEP 0.5f / FPS
 #define FORCE 500.0f * TIMESTEP
 
+float highSound = 45.f, lowSound = 15.f;
+
 float dot(sf::Vector2f a, sf::Vector2f b) {
 	return a.x * b.x + a.y * b.y;
 }
@@ -56,10 +58,13 @@ int main()
 	shoot.setBuffer(shootbuffer);
 
 	bump.setBuffer(bumpbuffer);
-	bump.setVolume(45.f);
+	bump.setVolume(highSound);
 	bump.setAttenuation(25.f);
 
 	wall.setBuffer(wallbuffer);
+	wall.setVolume(lowSound);
+	wall.setAttenuation(25.f);
+
 
 	fstream file;
 	string inputFile = "ballconfigs/hard.txt";
@@ -127,7 +132,7 @@ int main()
 		float rad, posx, posy, mass, elasticity;
 		string type;
 		file >> rad >> posx >> posy >> mass >> elasticity >> type;
-		
+
 		sf::Color powerup;
 		if (type == "shootBall") {
 			powerup = sf::Color::Red;
@@ -138,7 +143,10 @@ int main()
 		else if (type == "speedBoost") {
 			powerup = sf::Color::Cyan;
 		}
-		
+		else {
+			powerup = sf::Color::Magenta;
+		}
+
 		evBalls.push_back(Circle(rad, posx, posy, mass, elasticity, powerup, type));
 	}
 
@@ -152,7 +160,7 @@ int main()
 	bool move1 = false, move2 = false, shoot1 = false, shoot2 = false, firstShot1 = false, firstShot2 = false;
 	float direction1X = 0, direction1Y = 0, direction2X = 0, direction2Y = 0;
 	float cooldown1 = 5, cooldown2 = 5;
-	
+
 	Grid grid;
 	grid.createGrid("maps/hard.txt", 1000, 1000);
 
@@ -163,11 +171,11 @@ int main()
 		if (c.duration > 0) buff1 = "Player 1 buff: " + c.buff;
 		else buff1 = "Player 1 buff: ";
 
-		if(d.duration > 0) buff2 = "Player 2 buff: " + d.buff;
+		if (d.duration > 0) buff2 = "Player 2 buff: " + d.buff;
 		else buff2 = "Player 2 buff: ";
 
-		reload1 = "Reloading (" + to_string( (int) (5 - cooldown1 + 1) ) + " s)";
-		reload2 = "Reloading (" + to_string( (int) (5 - cooldown2 + 1) ) + " s)";
+		reload1 = "Reloading (" + to_string((int)(5 - cooldown1 + 1)) + " s)";
+		reload2 = "Reloading (" + to_string((int)(5 - cooldown2 + 1)) + " s)";
 
 		sf::Event event;
 		while (window.pollEvent(event))
@@ -178,50 +186,58 @@ int main()
 				//p1 movement
 				if (event.key.code == sf::Keyboard::D) {
 					move1 = true;
-					acceleration1.x += FORCE / c.getMass();
+					if (c.m_velocity.x < 0) acceleration1.x += 5 * FORCE / c.getMass();
+					else acceleration1.x += FORCE / c.getMass();
 					direction1X = 1;
 					direction1Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::A) {
 					move1 = true;
-					acceleration1.x -= FORCE / c.getMass();
+					if (c.m_velocity.x > 0) acceleration1.x -= 5 * FORCE / c.getMass();
+					else acceleration1.x -= FORCE / c.getMass();
 					direction1X = -1;
 					direction1Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::S) {
 					move1 = true;
-					acceleration1.y += FORCE / c.getMass();
+					if (c.m_velocity.y < 0) acceleration1.y += 5 * FORCE / c.getMass();
+					else acceleration1.y += FORCE / c.getMass();
 					direction1Y = 1;
 					direction1X = 0;
 				}
 				if (event.key.code == sf::Keyboard::W) {
 					move1 = true;
-					acceleration1.y -= FORCE / c.getMass();
+					if (c.m_velocity.y > 0) acceleration1.y -= 5 * FORCE / c.getMass();
+					else acceleration1.y -= FORCE / c.getMass();
 					direction1Y = -1;
 					direction1X = 0;
 				}
 				//p2 movement
 				if (event.key.code == sf::Keyboard::Right) {
 					move2 = true;
-					acceleration2.x += FORCE / d.getMass();
+					if (d.m_velocity.x < 0) acceleration2.x += 5 * FORCE / d.getMass();
+					else acceleration2.x += FORCE / d.getMass();
 					direction2X = 1;
 					direction2Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::Left) {
 					move2 = true;
-					acceleration2.x -= FORCE / d.getMass();
+					if (d.m_velocity.x > 0) acceleration2.x -= 5 * FORCE / d.getMass();
+					else acceleration2.x -= FORCE / d.getMass();
 					direction2X = -1;
 					direction2Y = 0;
 				}
 				if (event.key.code == sf::Keyboard::Down) {
 					move2 = true;
-					acceleration2.y += FORCE / d.getMass();
+					if (d.m_velocity.y < 0) acceleration2.y += 5 * FORCE / d.getMass();
+					else acceleration2.y += FORCE / d.getMass();
 					direction2Y = 1;
 					direction2X = 0;
 				}
 				if (event.key.code == sf::Keyboard::Up) {
 					move2 = true;
-					acceleration2.y -= FORCE / d.getMass();
+					if (d.m_velocity.y > 0) acceleration2.y -= 5 * FORCE / d.getMass();
+					else acceleration2.y -= FORCE / d.getMass();
 					direction2Y = -1;
 					direction2X = 0;
 				}
@@ -290,27 +306,31 @@ int main()
 		else cooldown2 += time;
 		if (cooldown1 > 5) cooldown1 = 5;
 		if (cooldown2 > 5) cooldown2 = 5;
-		
+
 		window.clear();
 		grid.drawGrid(window);
 
 		for (int x = 0; x < balls.size(); x++) {
-			Circle &temp = *balls[x];
-			
+			Circle& temp = *balls[x];
+
 			if (temp.m_type == "player1" || temp.m_type == "player2") temp.addDuration(-time);
 			else temp.addDuration(time);
 
 			if (temp.m_type == "player1")
-				cd1 = "Duration: " + to_string((int) (temp.duration + 1)) + " s";
+				cd1 = "Duration: " + to_string((int)(temp.duration + 1)) + " s";
 
 			if (temp.m_type == "player2")
-				cd2 = "Duration: " + to_string((int) (temp.duration + 1)) + " s";
+				cd2 = "Duration: " + to_string((int)(temp.duration + 1)) + " s";
 
 			for (int y = x + 1; y < balls.size(); y++) {
-				Circle &temp2 = *balls[y];
+				Circle& temp2 = *balls[y];
 				if (temp.isCollidingWithCircle(temp2)) {
-					bump.play();
-					if ((temp.m_type == "player1" || temp.m_type == "player2") && temp2.duration == 15) {
+					if (temp.m_type == "player1" || temp.m_type == "player2") {
+						if (temp2.m_type == "player1" || temp2.m_type == "player2") bump.setVolume(highSound);
+						else bump.setVolume(lowSound);
+						bump.play();
+					}
+					if ((temp.m_type == "player1" || temp.m_type == "player2") && temp2.duration == 15 && temp2.m_type != "ball") {
 						temp.buff = temp2.m_type;
 						temp.duration = temp2.duration;
 						temp2.duration = 0;
@@ -341,30 +361,31 @@ int main()
 
 			string wd = grid.wallDirection(temp.c);
 			if (wd == "top") {
-				wall.play();
-				temp.c.move(sf::Vector2f(0, -5));
-				temp.pm.move(sf::Vector2f(0, -5));
+				if (temp.m_type == "player1" || temp.m_type == "player2") wall.play();
+				temp.c.move(sf::Vector2f(0, -10));
+				temp.pm.move(sf::Vector2f(0, -10));
 				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, -abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
 			else if (wd == "bottom") {
-				wall.play();
-				temp.c.move(sf::Vector2f(0, 5));
-				temp.pm.move(sf::Vector2f(0, 5));
+				if (temp.m_type == "player1" || temp.m_type == "player2") wall.play();
+				temp.c.move(sf::Vector2f(0, 10));
+				temp.pm.move(sf::Vector2f(0, 10));
 				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
 			else if (wd == "left") {
-				wall.play();
-				temp.c.move(sf::Vector2f(-5, 0));
-				temp.pm.move(sf::Vector2f(-5, 0));
+				if (temp.m_type == "player1" || temp.m_type == "player2") wall.play();
+				temp.c.move(sf::Vector2f(-10, 0));
+				temp.pm.move(sf::Vector2f(-10, 0));
 				temp.setVelocity(sf::Vector2f(-abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());
 			}
 			else if (wd == "right") {
-				wall.play();
-				temp.c.move(sf::Vector2f(5, 0));
-				temp.pm.move(sf::Vector2f(5, 0));
+				if (temp.m_type == "player1" || temp.m_type == "player2") wall.play();
+				temp.c.move(sf::Vector2f(10, 0));
+				temp.pm.move(sf::Vector2f(10, 0));
 				temp.setVelocity(sf::Vector2f(abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());
 			}
 
+			temp.setTexture();
 			temp.moveCircle();
 			temp.drawCircle(window);
 
@@ -380,9 +401,9 @@ int main()
 			window.draw(p1);
 			window.draw(p2);
 
-			if(c.duration > 0)
+			if (c.duration > 0)
 				window.draw(c1);
-			if(d.duration > 0)
+			if (d.duration > 0)
 				window.draw(c2);
 
 			if (cooldown1 < 5)
