@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include "Grid.cpp"
+#include <thread>
 using namespace std;
 
 #define FPS 60
@@ -83,7 +84,7 @@ int main()
 	sf::Font standard;
 	standard.loadFromFile("AGENCYR.ttf");
 
-	sf::Text p1, p2, c1, c2, r1, r2;
+	sf::Text p1, p2, c1, c2, r1, r2, win;
 
 	p1.setFont(standard);
 	p2.setFont(standard);
@@ -120,6 +121,12 @@ int main()
 
 	r1.setPosition(sf::Vector2f(55, 100));
 	r2.setPosition(sf::Vector2f(600, 100));
+
+	win.setCharacterSize(64);
+	win.setFont(standard);
+	win.setFillColor(sf::Color::White);
+	win.setPosition(sf::Vector2f(360, 450));
+	bool showWin = false;
 
 	std::vector<Circle*> balls;
 	balls.push_back(&c);
@@ -353,10 +360,12 @@ int main()
 			}
 
 			if (!grid.onPlatform(temp.c) && temp.m_type == "player1") {
-				cout << "Player 2 Wins" << endl;
+				win.setString("Player 2 Wins");
+				showWin = true;
 			}
 			else if (!grid.onPlatform(temp.c) && temp.m_type == "player2") {
-				cout << "Player 1 Wins" << endl;
+				win.setString("Player 1 Wins");
+				showWin = true;
 			}
 
 			string wd = grid.wallDirection(temp.c);
@@ -410,8 +419,18 @@ int main()
 				window.draw(r1);
 			if (cooldown2 < 5)
 				window.draw(r2);
+
+			if (showWin) {
+				window.draw(win);
+			}
+			
 		}
 		window.display();
+
+		if (showWin) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+			return 0;
+		}
 	}
 
 	return 0;
