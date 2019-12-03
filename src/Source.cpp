@@ -3,6 +3,7 @@
 #include "Circle.h"
 #include <fstream>
 #include <iostream>
+#include <cmath>
 #include "Grid.cpp"
 using namespace std;
 
@@ -339,25 +340,25 @@ int main()
 			}
 
 			string wd = grid.wallDirection(temp.c);
-			if (wd._Equal("top")) {
+			if (wd == "top") {
 				wall.play();
 				temp.c.move(sf::Vector2f(0, -5));
 				temp.pm.move(sf::Vector2f(0, -5));
 				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, -abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
-			else if (wd._Equal("bottom")) {
+			else if (wd == "bottom") {
 				wall.play();
 				temp.c.move(sf::Vector2f(0, 5));
 				temp.pm.move(sf::Vector2f(0, 5));
 				temp.setVelocity(sf::Vector2f(temp.m_velocity.x, abs(temp.m_velocity.y) * temp.getElasticity()));
 			}
-			else if (wd._Equal("left")) {
+			else if (wd == "left") {
 				wall.play();
 				temp.c.move(sf::Vector2f(-5, 0));
 				temp.pm.move(sf::Vector2f(-5, 0));
 				temp.setVelocity(sf::Vector2f(-abs(temp.m_velocity.x), temp.m_velocity.y) * temp.getElasticity());
 			}
-			else if (wd._Equal("right")) {
+			else if (wd == "right") {
 				wall.play();
 				temp.c.move(sf::Vector2f(5, 0));
 				temp.pm.move(sf::Vector2f(5, 0));

@@ -1,6 +1,7 @@
 #include "Circle.h"
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <cmath>
 using namespace std;
 
 float mag(sf::Vector2f v) {

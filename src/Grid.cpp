@@ -1,12 +1,13 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <fstream>
 #include <iostream>
 using namespace std;
 
 struct Grid {
 public:
-	std::vector<std::vector<sf::RectangleShape>> tiles;
+	std::vector<std::vector<sf::RectangleShape> > tiles;
 	void createGrid(string inputFile, int w, int h) {
 		int width = w;
 		int height = h;
